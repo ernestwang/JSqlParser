@@ -22,6 +22,7 @@
 package net.sf.jsqlparser.statement.select;
 
 import java.util.List;
+import java.io.Serializable;
 
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.schema.Column;
@@ -29,8 +30,9 @@ import net.sf.jsqlparser.schema.Column;
 /**
  * A join clause
  */
-public class Join {
+public class Join implements Serializable {
 
+	private static final long serialVersionUID = 1L;
 	private boolean outer = false;
 	private boolean right = false;
 	private boolean left = false;

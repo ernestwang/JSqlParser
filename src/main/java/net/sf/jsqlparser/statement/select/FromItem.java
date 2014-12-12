@@ -21,11 +21,12 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import java.io.Serializable;
 /**
  * An item in a "SELECT [...] FROM item1" statement. (for example a table or a
  * sub-select)
  */
-public interface FromItem {
+public interface FromItem extends Serializable {
 
 	void accept(FromItemVisitor fromItemVisitor);
 

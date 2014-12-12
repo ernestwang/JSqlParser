@@ -21,12 +21,15 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import java.io.Serializable;
+
 /**
  * A limit clause in the form [LIMIT {[offset,] row_count) | (row_count | ALL)
  * OFFSET offset}]
  */
-public class Limit {
+public class Limit implements Serializable {
 
+	private static final long serialVersionUID = 1L;
 	private long offset;
 	private long rowCount;
 	private boolean rowCountJdbcParameter = false;

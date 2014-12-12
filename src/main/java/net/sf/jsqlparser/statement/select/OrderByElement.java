@@ -21,13 +21,16 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import java.io.Serializable;
+
 import net.sf.jsqlparser.expression.Expression;
 
 /**
  * An element (column reference) in an "ORDER BY" clause.
  */
-public class OrderByElement {
+public class OrderByElement implements Serializable {
 
+	private static final long serialVersionUID = 1L;
 	private Expression expression;
 	private boolean asc = true;
 
