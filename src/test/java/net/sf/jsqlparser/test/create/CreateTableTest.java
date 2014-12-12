@@ -35,17 +35,46 @@ public class CreateTableTest extends TestCase {
 		String statement = "CREATE TABLE testtab (\"test\" varchar (255), \"test2\" varchar (255))";
 		assertSqlCanBeParsedAndDeparsed(statement);
 	}
+    
+    public void testCreateTableAsSelect() throws JSQLParserException {
+		String statement = "CREATE TABLE a AS SELECT col1, col2 FROM b";
+		assertSqlCanBeParsedAndDeparsed(statement);
+	}
+    
+    public void testCreateTableAsSelect2() throws JSQLParserException {
+		String statement = "CREATE TABLE newtable AS WITH a AS (SELECT col1, col3 FROM testtable) SELECT col1, col2, col3 FROM b INNER JOIN a ON b.col1 = a.col1";
+		assertSqlCanBeParsedAndDeparsed(statement);
+	}
 
 	public void testCreateTable() throws JSQLParserException {
 		String statement = "CREATE TABLE mytab (mycol a (10, 20) c nm g, mycol2 mypar1 mypar2 (23,323,3) asdf ('23','123') dasd, "
 				+ "PRIMARY KEY (mycol2, mycol)) type = myisam";
 		CreateTable createTable = (CreateTable) parserManager.parse(new StringReader(statement));
 		assertEquals(2, createTable.getColumnDefinitions().size());
+        assertFalse(createTable.isUnlogged());
 		assertEquals("mycol", ((ColumnDefinition) createTable.getColumnDefinitions().get(0)).getColumnName());
 		assertEquals("mycol2", ((ColumnDefinition) createTable.getColumnDefinitions().get(1)).getColumnName());
 		assertEquals("PRIMARY KEY", ((Index) createTable.getIndexes().get(0)).getType());
 		assertEquals("mycol", ((Index) createTable.getIndexes().get(0)).getColumnsNames().get(1));
 		assertEquals(statement, "" + createTable);
+	}
+    
+    public void testCreateTableUnlogged() throws JSQLParserException {
+		String statement = "CREATE UNLOGGED TABLE mytab (mycol a (10, 20) c nm g, mycol2 mypar1 mypar2 (23,323,3) asdf ('23','123') dasd, "
+				+ "PRIMARY KEY (mycol2, mycol)) type = myisam";
+		CreateTable createTable = (CreateTable) parserManager.parse(new StringReader(statement));
+		assertEquals(2, createTable.getColumnDefinitions().size());
+        assertTrue(createTable.isUnlogged());
+		assertEquals("mycol", ((ColumnDefinition) createTable.getColumnDefinitions().get(0)).getColumnName());
+		assertEquals("mycol2", ((ColumnDefinition) createTable.getColumnDefinitions().get(1)).getColumnName());
+		assertEquals("PRIMARY KEY", ((Index) createTable.getIndexes().get(0)).getType());
+		assertEquals("mycol", ((Index) createTable.getIndexes().get(0)).getColumnsNames().get(1));
+		assertEquals(statement, "" + createTable);
+	}
+    
+    public void testCreateTableUnlogged2() throws JSQLParserException {
+		String statement = "CREATE UNLOGGED TABLE mytab (mycol a (10, 20) c nm g, mycol2 mypar1 mypar2 (23,323,3) asdf ('23','123') dasd, PRIMARY KEY (mycol2, mycol))";
+		assertSqlCanBeParsedAndDeparsed(statement);
 	}
 	
 	public void testCreateTableForeignKey() throws JSQLParserException {
@@ -57,6 +86,27 @@ public class CreateTableTest extends TestCase {
 		String statement = "CREATE TABLE test (id INT UNSIGNED NOT NULL AUTO_INCREMENT, string VARCHAR (20), user_id INT UNSIGNED, PRIMARY KEY (id), CONSTRAINT fkIdx FOREIGN KEY (user_id) REFERENCES ra_user(id))";
 		assertSqlCanBeParsedAndDeparsed(statement);
 	}
+    
+    public void testCreateTablePrimaryKey() throws JSQLParserException {
+		String statement = "CREATE TABLE test (id INT UNSIGNED NOT NULL AUTO_INCREMENT, string VARCHAR (20), user_id INT UNSIGNED, CONSTRAINT pk_name PRIMARY KEY (id))";
+		assertSqlCanBeParsedAndDeparsed(statement);
+	}
+    
+    public void testCreateTableParams() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE TEMPORARY TABLE T1 (PROCESSID VARCHAR (32)) ON COMMIT PRESERVE ROWS");
+    }
+    
+    public void testCreateTableUniqueConstraint() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE Activities (_id INTEGER PRIMARY KEY AUTOINCREMENT,uuid VARCHAR(255),user_id INTEGER,sound_id INTEGER,sound_type INTEGER,comment_id INTEGER,type String,tags VARCHAR(255),created_at INTEGER,content_id INTEGER,sharing_note_text VARCHAR(255),sharing_note_created_at INTEGER,UNIQUE (created_at, type, content_id, sound_id, user_id))", true);
+    }
+    
+    public void testCreateTableDefault() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE T1 (id integer default -1)");
+    }
+    
+    public void testCreateTableDefault2() throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed("CREATE TABLE T1 (id integer default 1)");
+    }
 
 	public void testRUBiSCreateList() throws Exception {
 		BufferedReader in = new BufferedReader(new InputStreamReader(CreateTableTest.class.getResourceAsStream("/RUBiS-create-requests.txt")));
@@ -152,7 +202,7 @@ public class CreateTableTest extends TestCase {
 
 					}
 				} catch (Exception e) {
-					throw new TestException("error at stm num: " + numSt, e);
+					throw new TestException("error at stm num: " + numSt + "  " + query, e);
 				}
 				numSt++;
 

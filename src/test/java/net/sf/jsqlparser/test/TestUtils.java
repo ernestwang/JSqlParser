@@ -18,42 +18,76 @@
  */
 package net.sf.jsqlparser.test;
 
-import java.io.StringReader;
+import net.sf.jsqlparser.*;
+import net.sf.jsqlparser.expression.*;
+import net.sf.jsqlparser.parser.*;
+import net.sf.jsqlparser.statement.*;
+import net.sf.jsqlparser.util.deparser.*;
+
+import java.io.*;
+
 import static junit.framework.Assert.assertEquals;
-import net.sf.jsqlparser.JSQLParserException;
-import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.parser.CCJSqlParserUtil;
-import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.util.deparser.ExpressionDeParser;
-import net.sf.jsqlparser.util.deparser.SelectDeParser;
-import net.sf.jsqlparser.util.deparser.StatementDeParser;
+import org.junit.Test;
 
 /**
- * 
+ *
  * @author toben
  */
 public class TestUtils {
-	public static void assertSqlCanBeParsedAndDeparsed(String statement) throws JSQLParserException {
-		Statement parsed = CCJSqlParserUtil.parse(new StringReader(statement));
-		assertStatementCanBeDeparsedAs(parsed, statement);
-	}
 
-	public static void assertStatementCanBeDeparsedAs(Statement parsed, String statement) {
-		assertEquals(statement, parsed.toString());
+    public static void assertSqlCanBeParsedAndDeparsed(String statement) throws JSQLParserException {
+        assertSqlCanBeParsedAndDeparsed(statement, false);
+    }
 
-		StatementDeParser deParser = new StatementDeParser(new StringBuilder());
-		parsed.accept(deParser);
-		assertEquals(statement, deParser.getBuffer().toString());
-	}
-	
-	public static void assertExpressionCanBeDeparsedAs(final Expression parsed, String expression) {
-		ExpressionDeParser expressionDeParser = new ExpressionDeParser();
-		StringBuilder stringBuffer = new StringBuilder();
-		expressionDeParser.setBuffer(stringBuffer);
-		SelectDeParser selectDeParser = new SelectDeParser(expressionDeParser, stringBuffer);
-		expressionDeParser.setSelectVisitor(selectDeParser);
-		parsed.accept(expressionDeParser);
+    /**
+     * Tries to parse and deparse the given statement.
+     *
+     * @param statement
+     * @param laxDeparsingCheck removes all linefeeds from the original and
+     * removes all double spaces. The check is caseinsensitive.
+     * @throws JSQLParserException
+     */
+    public static void assertSqlCanBeParsedAndDeparsed(String statement, boolean laxDeparsingCheck) throws JSQLParserException {
+        Statement parsed = CCJSqlParserUtil.parse(new StringReader(statement));
+        assertStatementCanBeDeparsedAs(parsed, statement, laxDeparsingCheck);
+    }
 
-		assertEquals(expression, stringBuffer.toString());
-	}
+    public static void assertStatementCanBeDeparsedAs(Statement parsed, String statement) {
+        assertStatementCanBeDeparsedAs(parsed, statement, false);
+    }
+
+    public static void assertStatementCanBeDeparsedAs(Statement parsed, String statement, boolean laxDeparsingCheck) {
+        assertEquals(buildSqlString(statement, laxDeparsingCheck), 
+                buildSqlString(parsed.toString(), laxDeparsingCheck));
+
+        StatementDeParser deParser = new StatementDeParser(new StringBuilder());
+        parsed.accept(deParser);
+        assertEquals(buildSqlString(statement, laxDeparsingCheck), 
+                buildSqlString(deParser.getBuffer().toString(), laxDeparsingCheck));
+    }
+
+    public static String buildSqlString(String sql, boolean laxDeparsingCheck) {
+        if (laxDeparsingCheck) {
+            return sql.replaceAll("\\s", " ").replaceAll("\\s+", " ").replaceAll("\\s*([/,()=+\\-*|\\]<>])\\s*", "$1").toLowerCase().trim();
+        } else {
+            return sql;
+        }
+    }
+    
+    @Test
+    public void testBuildSqlString() {
+        assertEquals("select col from test", buildSqlString("   SELECT   col FROM  \r\n \t  TEST \n", true));
+        assertEquals("select  col  from test", buildSqlString("select  col  from test", false));
+    }
+
+    public static void assertExpressionCanBeDeparsedAs(final Expression parsed, String expression) {
+        ExpressionDeParser expressionDeParser = new ExpressionDeParser();
+        StringBuilder stringBuilder = new StringBuilder();
+        expressionDeParser.setBuffer(stringBuilder);
+        SelectDeParser selectDeParser = new SelectDeParser(expressionDeParser, stringBuilder);
+        expressionDeParser.setSelectVisitor(selectDeParser);
+        parsed.accept(expressionDeParser);
+
+        assertEquals(expression, stringBuilder.toString());
+    }
 }

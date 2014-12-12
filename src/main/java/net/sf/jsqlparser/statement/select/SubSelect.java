@@ -21,6 +21,7 @@
  */
 package net.sf.jsqlparser.statement.select;
 
+import net.sf.jsqlparser.expression.Alias;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.expression.operators.relational.ItemsList;
@@ -32,7 +33,8 @@ import net.sf.jsqlparser.expression.operators.relational.ItemsListVisitor;
 public class SubSelect implements FromItem, Expression, ItemsList {
 
 	private SelectBody selectBody;
-	private String alias;
+	private Alias alias;
+    private boolean useBrackets = true;
 
     private Pivot pivot;
 
@@ -55,21 +57,31 @@ public class SubSelect implements FromItem, Expression, ItemsList {
 	}
 
 	@Override
-	public String getAlias() {
+	public Alias getAlias() {
 		return alias;
 	}
 
 	@Override
-	public void setAlias(String string) {
-		alias = string;
+	public void setAlias(Alias alias) {
+		this.alias = alias;
 	}
 
+	@Override
     public Pivot getPivot() {
         return pivot;
     }
 
+	@Override
     public void setPivot(Pivot pivot) {
         this.pivot = pivot;
+    }
+
+    public boolean isUseBrackets() {
+        return useBrackets;
+    }
+
+    public void setUseBrackets(boolean useBrackets) {
+        this.useBrackets = useBrackets;
     }
 
 	@Override
@@ -79,6 +91,8 @@ public class SubSelect implements FromItem, Expression, ItemsList {
 
 	@Override
 	public String toString() {
-		return "(" + selectBody + ")" + ((alias != null) ? " AS " + alias : "");
+		return (useBrackets?"(":"") + selectBody + (useBrackets?")":"") 
+                + ((pivot != null) ? " " + pivot : "")
+                + ((alias != null) ? alias.toString() : "");
 	}
 }

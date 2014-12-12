@@ -44,6 +44,8 @@ import net.sf.jsqlparser.expression.operators.relational.Matches;
 import net.sf.jsqlparser.expression.operators.relational.MinorThan;
 import net.sf.jsqlparser.expression.operators.relational.MinorThanEquals;
 import net.sf.jsqlparser.expression.operators.relational.NotEqualsTo;
+import net.sf.jsqlparser.expression.operators.relational.RegExpMatchOperator;
+import net.sf.jsqlparser.expression.operators.relational.RegExpMySQLOperator;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.select.SubSelect;
 
@@ -53,11 +55,11 @@ public interface ExpressionVisitor {
 
 	void visit(Function function);
 
-	void visit(InverseExpression inverseExpression);
+	void visit(SignedExpression signedExpression);
 
 	void visit(JdbcParameter jdbcParameter);
-        
-        void visit(JdbcNamedParameter jdbcNamedParameter);
+
+    void visit(JdbcNamedParameter jdbcNamedParameter);
 
 	void visit(DoubleValue doubleValue);
 
@@ -136,8 +138,14 @@ public interface ExpressionVisitor {
 	void visit(AnalyticExpression aexpr);
 
 	void visit(ExtractExpression eexpr);
-	
+
 	void visit(IntervalExpression iexpr);
-	
+
 	void visit(OracleHierarchicalExpression oexpr);
+
+	void visit(RegExpMatchOperator rexpr);
+    
+    void visit(JsonExpression jsonExpr);
+
+	void visit(RegExpMySQLOperator regExpMySQLOperator);
 }

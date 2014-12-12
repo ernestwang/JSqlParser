@@ -30,32 +30,72 @@ import net.sf.jsqlparser.expression.Expression;
  */
 public class OrderByElement implements Serializable {
 
-	private static final long serialVersionUID = 1L;
-	private Expression expression;
-	private boolean asc = true;
 
-	public boolean isAsc() {
-		return asc;
-	}
+    private static final long serialVersionUID = 1L;
+    private Expression expression;
+    private boolean asc = true;
 
-	public void setAsc(boolean b) {
-		asc = b;
-	}
+    public enum NullOrdering {
+        NULLS_FIRST,
+        NULLS_LAST
+    }
 
-	public void accept(OrderByVisitor orderByVisitor) {
-		orderByVisitor.visit(this);
-	}
+    private Expression expression;
+    private boolean asc = true;
+    private NullOrdering nullOrdering;
+    private boolean ascDesc = false;
 
-	public Expression getExpression() {
-		return expression;
-	}
+    public boolean isAsc() {
+        return asc;
+    }
 
-	public void setExpression(Expression expression) {
-		this.expression = expression;
-	}
+    public NullOrdering getNullOrdering() {
+        return nullOrdering;
+    }
 
-	@Override
-	public String toString() {
-		return "" + expression + ((asc) ? "" : " DESC");
-	}
+    public void setNullOrdering(NullOrdering nullOrdering) {
+        this.nullOrdering = nullOrdering;
+    }
+
+    public void setAsc(boolean b) {
+        asc = b;
+    }
+    
+    public void setAscDescPresent(boolean b) {
+        ascDesc = b;
+    }
+
+    public boolean isAscDescPresent() {
+        return ascDesc;
+    }
+
+    public void accept(OrderByVisitor orderByVisitor) {
+        orderByVisitor.visit(this);
+    }
+
+    public Expression getExpression() {
+        return expression;
+    }
+
+    public void setExpression(Expression expression) {
+        this.expression = expression;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder b = new StringBuilder();
+        b.append(expression.toString());
+        
+        if (!asc) {
+            b.append(" DESC");
+        } else if (ascDesc) {
+            b.append(" ASC");
+        }
+        
+        if (nullOrdering != null) {
+            b.append(' ');
+            b.append(nullOrdering == NullOrdering.NULLS_FIRST ? "NULLS FIRST" : "NULLS LAST");
+        }
+        return b.toString();
+    }
 }
