@@ -32,9 +32,6 @@ public class OrderByElement implements Serializable {
 
 
     private static final long serialVersionUID = 1L;
-    private Expression expression;
-    private boolean asc = true;
-
     public enum NullOrdering {
         NULLS_FIRST,
         NULLS_LAST
